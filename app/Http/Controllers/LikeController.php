@@ -2,39 +2,33 @@
 
 namespace App\Http\Controllers;
 
+use Illuminate\Http\Request;
 use App\Models\Post;
 use App\Models\Like;
-use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 
 class LikeController extends Controller
 {
-    /**
-     * Alterna un «Like».
-     * Si el usuario ya le dio like al post, lo quita.
-     * Si aún no, crea el like.
-     */
-    public function toggle(Post $post)
+    public function store(Post $post)
     {
-        $user = auth()->user();
+        $user = Auth::user();
 
-        // ¿Existe ya un like de este usuario para este post?
-        $existing = Like::where('post_id', $post->id)
-                        ->where('user_id', $user->id)
-                        ->first();
-
-        if ($existing) {
-            // Ya tenía like ➜ eliminar
-            $existing->delete();
-            $message = 'Like removido';
-        } else {
-            // No tenía like ➜ crear
-            Like::create([
-                'post_id' => $post->id,
+        // Evitar duplicados
+        if (!$post->likes()->where('user_id', $user->id)->exists()) {
+            $post->likes()->create([
                 'user_id' => $user->id,
             ]);
-            $message = 'Like agregado';
         }
 
-        return back()->with('success', $message);
+        return back();
+    }
+
+    public function destroy(Post $post)
+    {
+        $user = Auth::user();
+
+        $post->likes()->where('user_id', $user->id)->delete();
+
+        return back();
     }
 }

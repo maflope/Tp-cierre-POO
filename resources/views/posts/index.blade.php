@@ -17,11 +17,24 @@
         <hr class="my-4">
 
         <h3 class="text-lg font-semibold mb-2">Tus posteos</h3>
+
         @forelse ($posts as $post)
             <div class="border rounded p-4 mb-4">
                 <p><strong>{{ $post->user->name }}</strong></p>
                 <p>{{ $post->content }}</p>
                 <small class="text-gray-500">{{ $post->created_at->diffForHumans() }}</small>
+
+                {{-- Botones de like/unlike acá --}}
+                <form action="{{ route('posts.like', $post) }}" method="POST" style="display:inline;">
+                    @csrf
+                    <button type="submit" class="text-blue-500 underline">Like</button>
+                </form>
+
+                <form action="{{ route('posts.unlike', $post) }}" method="POST" style="display:inline;">
+                    @csrf
+                    @method('DELETE')
+                    <button type="submit" class="text-red-500 underline">Unlike</button>
+                </form>
             </div>
         @empty
             <p>No hay posteos todavía.</p>
